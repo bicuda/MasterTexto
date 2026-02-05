@@ -114,7 +114,7 @@ export const Editor = () => {
             attributes: {
                 class: 'w-full h-full bg-transparent focus:outline-none text-lg md:text-xl leading-relaxed text-zinc-100 placeholder:text-zinc-600 font-sans prose prose-invert max-w-none',
             },
-            handleClickOn: (view, pos, node, nodePos, event, direct) => {
+            handleClickOn: (_view, _pos, node, _nodePos, _event, _direct) => {
                 if (node.type.name === 'link') {
                     const href = node.attrs.href;
                     if (href) {
@@ -305,6 +305,44 @@ export const Editor = () => {
                 <p>Compartilhe este link para colaborar em tempo real.</p>
                 <p className="text-xs mt-1 text-zinc-700">Digite uma URL (ex: google.com) para criar um link.</p>
             </motion.footer>
+
+            {/* Safety Warning Modal */}
+            <AnimatePresence>
+                {modalLink && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl shadow-2xl max-w-md w-full"
+                        >
+                            <h3 className="text-xl font-bold text-yellow-400 mb-2 flex items-center gap-2">
+                                ⚠️ Link Já Visitado
+                            </h3>
+                            <p className="text-zinc-300 mb-4">
+                                Você já abriu este link anteriormente. Por segurança, estamos confirmando se deseja abrir novamente:
+                            </p>
+                            <div className="bg-zinc-800 p-3 rounded-lg mb-6 break-all text-sm text-blue-300 font-mono border border-zinc-700">
+                                {modalLink}
+                            </div>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setModalLink(null)}
+                                    className="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white transition-colors text-sm font-medium"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={() => openLink(modalLink)}
+                                    className="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-black transition-colors text-sm font-bold"
+                                >
+                                    Abrir Mesmo Assim
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
