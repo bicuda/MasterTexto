@@ -116,7 +116,7 @@ export const Editor = () => {
             },
             handleClick: (view, pos, event) => {
                 const { state } = view;
-                const { doc, schema } = state;
+                const { doc } = state;
 
                 // Check marks at the clicked position
                 // Resolve the position to get the context
