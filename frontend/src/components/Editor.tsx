@@ -268,13 +268,7 @@ export const Editor = () => {
                         <RotateCw size={16} />
                     </button>
 
-                    <div className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors",
-                        isConnected ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
-                    )}>
-                        <div className={cn("w-2 h-2 rounded-full", isConnected ? "bg-green-500" : "bg-red-500")} />
-                        {isConnected ? "Online" : "Conectando..."}
-                    </div>
+
 
                     <AnimatePresence>
                         {isSaving && (
@@ -312,10 +306,17 @@ export const Editor = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.2 }}
-                className="mt-6 text-center text-zinc-600 text-sm"
+                className="mt-6 flex justify-center py-4"
             >
-                <p>Compartilhe este link para colaborar em tempo real.</p>
-                <p className="text-xs mt-1 text-zinc-700">Digite uma URL (ex: google.com) para criar um link.</p>
+                <div
+                    className={cn(
+                        "w-2 h-2 rounded-full transition-all duration-500",
+                        isConnected
+                            ? "bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"
+                            : "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
+                    )}
+                    title={isConnected ? "Online" : "Desconectado"}
+                />
             </motion.footer>
 
             {/* Safety Warning Modal */}
