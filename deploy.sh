@@ -128,4 +128,5 @@ echo "✅ DEPLOY FINALIZADO!"
 echo "📍 Site: http://$SERVER_NAME:$FRONT_PORT"
 echo "=========================================="
 echo "📝 Exibindo logs do servidor (Ctrl+C para sair)..."
+pm2 flush mastertexto-api 2>/dev/null || true
 pm2 logs mastertexto-api --lines 20
