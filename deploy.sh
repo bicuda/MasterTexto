@@ -67,7 +67,7 @@ EOF
 
 # Enable Site
 sudo ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
-sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
+# sudo rm -f /etc/nginx/sites-enabled/default 2>/dev/null || true
 
 # Restart Nginx
 sudo nginx -t
