@@ -15,12 +15,71 @@ const socket: Socket = io('/', {
     autoConnect: false,
 });
 
+// Helper for local storage
+const STORAGE_KEY_VISITED = 'mastertexto_visited_links';
+const STORAGE_KEY_SAFETY = 'mastertexto_safety_mode';
+
 export const Editor = () => {
     const { roomId } = useParams<{ roomId: string }>();
     const [isConnected, setIsConnected] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
     const [timeAgoStr, setTimeAgoStr] = useState('agora');
+
+    // Safety Mode State
+    const [safetyMode, setSafetyMode] = useState(false);
+    const [visitedLinks, setVisitedLinks] = useState<Set<string>>(new Set());
+    const [modalLink, setModalLink] = useState<string | null>(null);
+
+    // Load Safety Settings on Mount
+    useEffect(() => {
+        const savedSafety = localStorage.getItem(STORAGE_KEY_SAFETY) === 'true';
+        setSafetyMode(savedSafety);
+
+        const savedLinks = localStorage.getItem(STORAGE_KEY_VISITED);
+        if (savedLinks) {
+            try {
+                setVisitedLinks(new Set(JSON.parse(savedLinks)));
+            } catch (e) {
+                console.error("Failed to parse visited links", e);
+            }
+        }
+    }, []);
+
+    // Toggle Safety Mode
+    const toggleSafetyMode = () => {
+        const newState = !safetyMode;
+        setSafetyMode(newState);
+        localStorage.setItem(STORAGE_KEY_SAFETY, String(newState));
+    };
+
+    // Handle Link Opening
+    const openLink = (url: string) => {
+        window.open(url, '_blank', 'noopener,noreferrer');
+        // Add to visited if not present
+        if (!visitedLinks.has(url)) {
+            const newSet = new Set(visitedLinks);
+            newSet.add(url);
+            setVisitedLinks(newSet);
+            localStorage.setItem(STORAGE_KEY_VISITED, JSON.stringify(Array.from(newSet)));
+        }
+        setModalLink(null);
+    };
+
+    const handleLinkClick = (url: string) => {
+        if (!safetyMode) {
+            openLink(url);
+            return;
+        }
+
+        if (visitedLinks.has(url)) {
+            // Already visited -> Show Warning
+            setModalLink(url);
+        } else {
+            // First time -> Open and Mark as visited
+            openLink(url);
+        }
+    };
 
     // Update "time ago" string every 5 seconds
     useEffect(() => {
@@ -38,66 +97,77 @@ export const Editor = () => {
     // Initialize Tiptap Editor
     const editor = useEditor({
         extensions: [
-            Link.configure({
-                openOnClick: true,
-                autolink: true,
-                linkOnPaste: true,
-                defaultProtocol: 'https',
-                HTMLAttributes: {
-                    class: 'cursor-pointer',
-                    target: '_blank',
-                    rel: 'noopener noreferrer'
-                }
-            }),
-            StarterKit,
-        ],
-        editorProps: {
-            attributes: {
-                class: 'w-full h-full bg-transparent focus:outline-none text-lg md:text-xl leading-relaxed text-zinc-100 placeholder:text-zinc-600 font-sans prose prose-invert max-w-none',
-            },
-            handlePaste: (view, event) => {
-                const text = event.clipboardData?.getData('text/plain');
-                // Check if pasted text is a URL
-                if (text && /^(https?:\/\/[^\s]+)$/.test(text.trim())) {
-                    const url = text.trim();
-                    const { state, dispatch } = view;
-                    const { tr, selection, schema } = state;
-
-                    // Create a link mark
-                    const linkMark = schema.marks.link.create({
-                        href: url,
+            extensions: [
+                Link.configure({
+                    openOnClick: false, // Handle manually
+                    autolink: true,
+                    linkOnPaste: true,
+                    defaultProtocol: 'https',
+                    HTMLAttributes: {
+                        class: 'cursor-pointer',
                         target: '_blank',
                         rel: 'noopener noreferrer'
-                    });
-
-                    // 1. Replace the entire current selection with the linked text
-                    // 2. Split the block at the end of the insertion to create a new line (Enter)
-                    const transaction = tr
-                        .replaceWith(selection.from, selection.to, schema.text(url, [linkMark]))
-                        .split(selection.from + url.length);
-
-                    dispatch(transaction);
-
-                    // Force focus and scroll
-                    requestAnimationFrame(() => {
-                        view.focus();
-                        if (view.dom) {
-                            view.dom.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                }),
+                StarterKit,
+            ],
+            editorProps: {
+                attributes: {
+                    class: 'w-full h-full bg-transparent focus:outline-none text-lg md:text-xl leading-relaxed text-zinc-100 placeholder:text-zinc-600 font-sans prose prose-invert max-w-none',
+                },
+                handleClickOn: (view, pos, node, nodePos, event, direct) => {
+                    if (node.type.name === 'link') {
+                        const href = node.attrs.href;
+                        if (href) {
+                            handleLinkClick(href);
+                            return true; // Stop propagation
                         }
-                    });
+                    }
+                    return false;
+                },
+                handlePaste: (view, event) => {
+                    const text = event.clipboardData?.getData('text/plain');
+                    // Check if pasted text is a URL
+                    if (text && /^(https?:\/\/[^\s]+)$/.test(text.trim())) {
+                        const url = text.trim();
+                        const { state, dispatch } = view;
+                        const { tr, selection, schema } = state;
 
-                    return true; // Prevent default behavior
+                        // Create a link mark
+                        const linkMark = schema.marks.link.create({
+                            href: url,
+                            target: '_blank',
+                            rel: 'noopener noreferrer'
+                        });
+
+                        // 1. Replace the entire current selection with the linked text
+                        // 2. Split the block at the end of the insertion to create a new line (Enter)
+                        const transaction = tr
+                            .replaceWith(selection.from, selection.to, schema.text(url, [linkMark]))
+                            .split(selection.from + url.length);
+
+                        dispatch(transaction);
+
+                        // Force focus and scroll
+                        requestAnimationFrame(() => {
+                            view.focus();
+                            if (view.dom) {
+                                view.dom.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                            }
+                        });
+
+                        return true; // Prevent default behavior
+                    }
+                    return false; // Default behavior
                 }
-                return false; // Default behavior
-            }
-        },
-        onUpdate: ({ editor }) => {
-            const html = editor.getHTML();
-            socket.emit('text_change', { roomId, content: html });
-            setIsSaving(true);
-            setLastUpdated(new Date());
-            setTimeout(() => setIsSaving(false), 800);
-        },
+            },
+            onUpdate: ({ editor }) => {
+                const html = editor.getHTML();
+                socket.emit('text_change', { roomId, content: html });
+                setIsSaving(true);
+                setLastUpdated(new Date());
+                setTimeout(() => setIsSaving(false), 800);
+            },
     });
 
     useEffect(() => {
@@ -163,6 +233,21 @@ export const Editor = () => {
                         <span className="text-xs text-zinc-500">Última atualização</span>
                         <span className="text-xs text-zinc-300 font-mono">{timeAgoStr}</span>
                     </div>
+
+                    {/* Safety Toggle */}
+                    <button
+                        onClick={toggleSafetyMode}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-colors border",
+                            safetyMode
+                                ? "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20"
+                                : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700"
+                        )}
+                        title={safetyMode ? "Modo Seguro Ativado (Verifica links repetidos)" : "Modo Seguro Desativado"}
+                    >
+                        <div className={cn("w-2 h-2 rounded-full", safetyMode ? "bg-blue-500 animate-pulse" : "bg-zinc-500")} />
+                        {safetyMode ? "Seguro" : "Padrão"}
+                    </button>
 
                     <button
                         onClick={handleRefresh}
