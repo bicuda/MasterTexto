@@ -74,12 +74,17 @@ mkdir -p "$APP_DIR/backend/prisma"
 # Recursive 777 to allow journal file creation/deletion
 chmod -R 777 "$APP_DIR/backend/prisma"
 
+# Setup DB
 npx prisma db push
+
+# Build Backend (Compile TS to JS)
+echo "🔨 Compilando Backend..."
 npm run build
 
-# Start/Restart Backend with PM2
+# Start with PM2
 pm2 stop mastertexto-api 2>/dev/null || true
 pm2 delete mastertexto-api 2>/dev/null || true
+# Run the compiled JS file
 pm2 start dist/server.js --name "mastertexto-api" --env PORT=$BACK_PORT
 pm2 save
 
