@@ -12,7 +12,7 @@ set VPS_USER=root
 set VPS_IP=207.180.246.127
 
 echo.
-echo [Config] Usuario: %VPS_USER% | IP: %VPS_IP%
+echo [Config] Usuario: %VPS_USER% - IP: %VPS_IP%
 
 echo.
 echo [1/2] Enviando script para o servidor...

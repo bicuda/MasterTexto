@@ -78,13 +78,16 @@ echo "PORT=$BACK_PORT" > .env
 echo "DATABASE_URL=\"file:$APP_DIR/backend/prisma/dev.db\"" >> .env
 # Ensure the prisma directory exists and has permissions
 mkdir -p "$APP_DIR/backend/prisma"
-chmod 777 "$APP_DIR/backend/prisma"
+# Recursive 777 to allow journal file creation/deletion
+chmod -R 777 "$APP_DIR/backend/prisma"
+
 npx prisma db push
 
 # Start/Restart Backend with PM2
 pm2 stop mastertexto-api 2>/dev/null || true
 pm2 delete mastertexto-api 2>/dev/null || true
-pm2 start src/server.ts --interpreter ./node_modules/.bin/ts-node --name "mastertexto-api" --env PORT=$BACK_PORT
+# Pass DATABASE_URL explicitly to ensure correct path resolution
+pm2 start src/server.ts --interpreter ./node_modules/.bin/ts-node --name "mastertexto-api" --env PORT=$BACK_PORT --env DATABASE_URL="file:$APP_DIR/backend/prisma/dev.db"
 pm2 save
 
 echo "🎨 Configurando Frontend..."

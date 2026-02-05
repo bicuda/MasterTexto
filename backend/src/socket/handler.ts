@@ -49,7 +49,7 @@ export const handleSocket = (socket: Socket, io: Server) => {
             } catch (e) {
                 console.error("Error saving content:", e);
             }
-        }, 1000); // 1 second debounce
+        }, 500); // 500ms debounce
     });
 
     socket.on('disconnect', () => {
