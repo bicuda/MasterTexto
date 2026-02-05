@@ -115,8 +115,10 @@ export const Editor = () => {
                 class: 'w-full h-full bg-transparent focus:outline-none text-lg md:text-xl leading-relaxed text-zinc-100 placeholder:text-zinc-600 font-sans prose prose-invert max-w-none',
             },
             handleClickOn: (_view, _pos, node, _nodePos, _event, _direct) => {
-                if (node.type.name === 'link') {
-                    const href = node.attrs.href;
+                // Check if the clicked node has a Link mark
+                const linkMark = node.marks.find(mark => mark.type.name === 'link');
+                if (linkMark) {
+                    const href = linkMark.attrs.href;
                     if (href) {
                         handleLinkClick(href);
                         return true; // Stop propagation
