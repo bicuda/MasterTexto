@@ -12,7 +12,7 @@ APP_DIR="/var/www/mastertexto"
 
 # --- CONFIGURAÇÃO PADRÃO (Sem perguntas) ---
 REPO_URL="https://github.com/bicuda/MasterTexto.git"
-FRONT_PORT="80"
+FRONT_PORT="8090"
 BACK_PORT="3010"
 # Usando sslip.io para ter um domínio válido para HTTPS
 SERVER_NAME="mastertexto.207.180.246.127.sslip.io"
@@ -21,7 +21,7 @@ echo "=========================================="
 echo "    MASTERTEXTO - DEPLOY AUTOMÁTICO (HTTPS)"
 echo "=========================================="
 echo "🔹 Repo: $REPO_URL"
-echo "🔹 Site: http://$SERVER_NAME"
+echo "🔹 Site: https://$SERVER_NAME:$FRONT_PORT"
 echo "🔹 API:  Porta $BACK_PORT"
 echo "----------------------------------------"
 
@@ -79,5 +79,5 @@ sudo certbot --nginx -d $SERVER_NAME --non-interactive --agree-tos --email admin
 
 echo "=========================================="
 echo "✅ DEPLOY FINALIZADO!"
-echo "📍 Site: https://$SERVER_NAME"
+echo "📍 Site: https://$SERVER_NAME:$FRONT_PORT"
 echo "=========================================="
