@@ -41,13 +41,13 @@ export const handleSocket = (socket: Socket, io: Server) => {
 
         saveQueue[data.roomId] = setTimeout(async () => {
             try {
-                await prisma.room.update({
+                const result = await prisma.room.update({
                     where: { slug: data.roomId },
                     data: { content: data.content }
                 });
-                console.log(`Saved content for room ${data.roomId}`);
+                console.log(`[PERSISTENCE] SUCCESS! Saved content for room ${data.roomId} (Size: ${data.content.length})`);
             } catch (e) {
-                console.error("Error saving content:", e);
+                console.error(`[PERSISTENCE] ERROR! Failed to save room ${data.roomId}:`, e);
             }
         }, 500); // 500ms debounce
     });
