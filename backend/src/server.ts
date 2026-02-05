@@ -29,6 +29,6 @@ app.get('/', (req, res) => {
     res.send('MasterTexto Backend is running');
 });
 
-server.listen(port, () => {
-    console.log(`[server] Running on port ${port}`);
+server.listen(PORT, () => {
+    console.log(`[server] Running on port ${PORT}`);
 });
