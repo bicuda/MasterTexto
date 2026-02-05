@@ -8,8 +8,11 @@ echo 1. Enviar o arquivo 'deploy.sh' para o seu VPS.
 echo 2. Conectar via SSH e rodar o instalador.
 echo.
 
-set /p VPS_USER="Digite o USUARIO do VPS (ex: root): "
-set /p VPS_IP="Digite o IP do VPS: "
+set VPS_USER=root
+set VPS_IP=207.180.246.127
+
+echo.
+echo [Config] Usuario: %VPS_USER% | IP: %VPS_IP%
 
 echo.
 echo [1/2] Enviando script para o servidor...

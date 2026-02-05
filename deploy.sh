@@ -10,23 +10,19 @@ set -e
 DEFAULT_REPO="https://github.com/bicuda/MasterTexto.git" 
 APP_DIR="/var/www/mastertexto"
 
+# --- CONFIGURAÇÃO PADRÃO (Sem perguntas) ---
+REPO_URL="https://github.com/bicuda/MasterTexto.git"
+FRONT_PORT="8090"
+BACK_PORT="3010"
+SERVER_NAME="207.180.246.127"
+
 echo "=========================================="
-echo "    MASTERTEXTO - CONFIGURAÇÃO DO SERVIDOR"
+echo "    MASTERTEXTO - DEPLOY AUTOMÁTICO"
 echo "=========================================="
-
-# 1. Ask for Repo URL (or use default)
-read -p "🔹 URL do Git (Enter para '$DEFAULT_REPO'): " REPO_URL
-REPO_URL=${REPO_URL:-$DEFAULT_REPO}
-
-# 2. Ask for Ports
-read -p "🔹 Porta do SITE (Frontend) [ex: 8090]: " FRONT_PORT
-FRONT_PORT=${FRONT_PORT:-8090}
-
-read -p "🔹 Porta da API (Backend) [ex: 3010]: " BACK_PORT
-BACK_PORT=${BACK_PORT:-3010}
-
-read -p "🔹 Domínio ou IP do Servidor: " SERVER_NAME
-SERVER_NAME=${SERVER_NAME:-_}
+echo "🔹 Repo: $REPO_URL"
+echo "🔹 Site: http://$SERVER_NAME:$FRONT_PORT"
+echo "🔹 API:  Porta $BACK_PORT"
+echo "----------------------------------------"
 
 echo "----------------------------------------"
 echo "⏳ Instalando Node.js, Nginx e ferramentas..."
@@ -45,6 +41,14 @@ if ! command -v pm2 &> /dev/null; then
 fi
 
 echo "📂 Preparando pasta do projeto..."
+
+# Preserve Database if exists
+DB_BACKUP="/tmp/mastertexto_db_backup.db"
+if [ -f "$APP_DIR/backend/prisma/dev.db" ]; then
+    echo "   💾 Salvando banco de dados atual..."
+    cp "$APP_DIR/backend/prisma/dev.db" "$DB_BACKUP"
+fi
+
 # Move existing folder to backup if exists
 if [ -d "$APP_DIR" ]; then
     echo "   Backup da versão anterior..."
@@ -55,6 +59,15 @@ sudo mkdir -p "$APP_DIR"
 sudo chown -R $USER:$USER "$APP_DIR"
 git clone "$REPO_URL" "$APP_DIR"
 
+# Restore Database
+if [ -f "$DB_BACKUP" ]; then
+    echo "   💾 Restaurando banco de dados..."
+    mkdir -p "$APP_DIR/backend/prisma"
+    cp "$DB_BACKUP" "$APP_DIR/backend/prisma/dev.db"
+    # Ensure permissions
+    chmod 666 "$APP_DIR/backend/prisma/dev.db"
+fi
+
 echo "⚙️ Configurando Backend..."
 cd "$APP_DIR/backend"
 npm install
@@ -62,7 +75,10 @@ npm install
 npx prisma generate
 # Create .env
 echo "PORT=$BACK_PORT" > .env
-echo "DATABASE_URL=\"file:./dev.db\"" >> .env
+echo "DATABASE_URL=\"file:$APP_DIR/backend/prisma/dev.db\"" >> .env
+# Ensure the prisma directory exists and has permissions
+mkdir -p "$APP_DIR/backend/prisma"
+chmod 777 "$APP_DIR/backend/prisma"
 npx prisma db push
 
 # Start/Restart Backend with PM2
