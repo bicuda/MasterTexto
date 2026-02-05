@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  server:
+    build: ./backend
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - DATABASE_URL=file:./dev.db
+      - PORT=3001
+    volumes:
+      - ./backend/prisma/dev.db:/app/prisma/dev.db
+
+  client:
+    build: ./frontend
+    restart: always
+    ports:
+      - "3000:80"
+    depends_on:
+      - server

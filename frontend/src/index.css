@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-dark-900 text-white font-sans antialiased;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #121212;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2C2C2C;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3B82F6;
+}
+
+/* Tiptap Specific Styles */
+.ProseMirror {
+  height: 100%;
+  outline: none !important;
+  white-space: pre-wrap !important;
+  /* Fix for layout syncing 'mashing' */
+  word-break: break-word;
+}
+
+.ProseMirror p {
+  margin-bottom: 0.5em;
+  /* Ensure paragraphs have visible separation */
+  min-height: 1.5em;
+  /* Fix for empty lines collapsing */
+}
+
+.ProseMirror a {
+  color: #60A5FA;
+  /* Lighter blue for dark mode contrast */
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  /* Bold */
+  cursor: pointer !important;
+  transition: all 0.2s;
+  pointer-events: auto !important;
+}
+
+.ProseMirror a:hover {
+  color: #93C5FD;
+  background-color: rgba(59, 130, 246, 0.1);
+  border-radius: 2px;
+}
