@@ -241,7 +241,7 @@ export const Editor = () => {
 
                 <div className="flex items-center gap-3">
                     <div className="flex flex-col items-end mr-2">
-                        <span className="text-xs text-zinc-500">Última atualização</span>
+                        <span className="text-xs text-zinc-500 hidden md:inline">Última atualização</span>
                         <span className="text-xs text-zinc-300 font-mono">{timeAgoStr}</span>
                     </div>
 
@@ -254,10 +254,10 @@ export const Editor = () => {
                                 ? "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20"
                                 : "bg-zinc-800 text-zinc-400 border-zinc-700 hover:bg-zinc-700"
                         )}
-                        title={safetyMode ? "Modo Seguro Ativado (Verifica links repetidos)" : "Modo Seguro Desativado"}
+                        title={safetyMode ? "Modo Seguro Ativado" : "Modo Seguro Desativado"}
                     >
                         <div className={cn("w-2 h-2 rounded-full", safetyMode ? "bg-blue-500 animate-pulse" : "bg-zinc-500")} />
-                        {safetyMode ? "Seguro" : "Padrão"}
+                        <span className="hidden md:inline">{safetyMode ? "Seguro" : "Padrão"}</span>
                     </button>
 
                     <button
@@ -334,21 +334,21 @@ export const Editor = () => {
                             <p className="text-zinc-300 mb-4">
                                 Você já abriu este link anteriormente. Por segurança, estamos confirmando se deseja abrir novamente:
                             </p>
-                            <div className="bg-zinc-800 p-3 rounded-lg mb-6 break-all text-sm text-blue-300 font-mono border border-zinc-700">
+                            <div className="bg-zinc-800 p-3 rounded-lg mb-6 text-sm text-blue-300 font-mono border border-zinc-700 overflow-hidden text-ellipsis whitespace-nowrap">
                                 {modalLink}
                             </div>
-                            <div className="flex justify-end gap-3">
+                            <div className="flex flex-col-reverse md:flex-row justify-end gap-3">
                                 <button
                                     onClick={() => setModalLink(null)}
-                                    className="px-4 py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white transition-colors text-sm font-medium"
+                                    className="px-4 py-3 md:py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white transition-colors text-sm font-medium w-full md:w-auto"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={() => openLink(modalLink)}
-                                    className="px-4 py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-black transition-colors text-sm font-bold"
+                                    className="px-4 py-3 md:py-2 rounded-lg bg-yellow-500 hover:bg-yellow-600 text-black transition-colors text-sm font-bold w-full md:w-auto"
                                 >
-                                    Abrir Mesmo Assim
+                                    Abrir Link
                                 </button>
                             </div>
                         </motion.div>
