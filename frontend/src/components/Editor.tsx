@@ -97,77 +97,76 @@ export const Editor = () => {
     // Initialize Tiptap Editor
     const editor = useEditor({
         extensions: [
-            extensions: [
-                Link.configure({
-                    openOnClick: false, // Handle manually
-                    autolink: true,
-                    linkOnPaste: true,
-                    defaultProtocol: 'https',
-                    HTMLAttributes: {
-                        class: 'cursor-pointer',
+            Link.configure({
+                openOnClick: false, // Handle manually
+                autolink: true,
+                linkOnPaste: true,
+                defaultProtocol: 'https',
+                HTMLAttributes: {
+                    class: 'cursor-pointer',
+                    target: '_blank',
+                    rel: 'noopener noreferrer'
+                }
+            }),
+            StarterKit,
+        ],
+        editorProps: {
+            attributes: {
+                class: 'w-full h-full bg-transparent focus:outline-none text-lg md:text-xl leading-relaxed text-zinc-100 placeholder:text-zinc-600 font-sans prose prose-invert max-w-none',
+            },
+            handleClickOn: (view, pos, node, nodePos, event, direct) => {
+                if (node.type.name === 'link') {
+                    const href = node.attrs.href;
+                    if (href) {
+                        handleLinkClick(href);
+                        return true; // Stop propagation
+                    }
+                }
+                return false;
+            },
+            handlePaste: (view, event) => {
+                const text = event.clipboardData?.getData('text/plain');
+                // Check if pasted text is a URL
+                if (text && /^(https?:\/\/[^\s]+)$/.test(text.trim())) {
+                    const url = text.trim();
+                    const { state, dispatch } = view;
+                    const { tr, selection, schema } = state;
+
+                    // Create a link mark
+                    const linkMark = schema.marks.link.create({
+                        href: url,
                         target: '_blank',
                         rel: 'noopener noreferrer'
-                    }
-                }),
-                StarterKit,
-            ],
-            editorProps: {
-                attributes: {
-                    class: 'w-full h-full bg-transparent focus:outline-none text-lg md:text-xl leading-relaxed text-zinc-100 placeholder:text-zinc-600 font-sans prose prose-invert max-w-none',
-                },
-                handleClickOn: (view, pos, node, nodePos, event, direct) => {
-                    if (node.type.name === 'link') {
-                        const href = node.attrs.href;
-                        if (href) {
-                            handleLinkClick(href);
-                            return true; // Stop propagation
+                    });
+
+                    // 1. Replace the entire current selection with the linked text
+                    // 2. Split the block at the end of the insertion to create a new line (Enter)
+                    const transaction = tr
+                        .replaceWith(selection.from, selection.to, schema.text(url, [linkMark]))
+                        .split(selection.from + url.length);
+
+                    dispatch(transaction);
+
+                    // Force focus and scroll
+                    requestAnimationFrame(() => {
+                        view.focus();
+                        if (view.dom) {
+                            view.dom.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
                         }
-                    }
-                    return false;
-                },
-                handlePaste: (view, event) => {
-                    const text = event.clipboardData?.getData('text/plain');
-                    // Check if pasted text is a URL
-                    if (text && /^(https?:\/\/[^\s]+)$/.test(text.trim())) {
-                        const url = text.trim();
-                        const { state, dispatch } = view;
-                        const { tr, selection, schema } = state;
+                    });
 
-                        // Create a link mark
-                        const linkMark = schema.marks.link.create({
-                            href: url,
-                            target: '_blank',
-                            rel: 'noopener noreferrer'
-                        });
-
-                        // 1. Replace the entire current selection with the linked text
-                        // 2. Split the block at the end of the insertion to create a new line (Enter)
-                        const transaction = tr
-                            .replaceWith(selection.from, selection.to, schema.text(url, [linkMark]))
-                            .split(selection.from + url.length);
-
-                        dispatch(transaction);
-
-                        // Force focus and scroll
-                        requestAnimationFrame(() => {
-                            view.focus();
-                            if (view.dom) {
-                                view.dom.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                            }
-                        });
-
-                        return true; // Prevent default behavior
-                    }
-                    return false; // Default behavior
+                    return true; // Prevent default behavior
                 }
-            },
-            onUpdate: ({ editor }) => {
-                const html = editor.getHTML();
-                socket.emit('text_change', { roomId, content: html });
-                setIsSaving(true);
-                setLastUpdated(new Date());
-                setTimeout(() => setIsSaving(false), 800);
-            },
+                return false; // Default behavior
+            }
+        },
+        onUpdate: ({ editor }) => {
+            const html = editor.getHTML();
+            socket.emit('text_change', { roomId, content: html });
+            setIsSaving(true);
+            setLastUpdated(new Date());
+            setTimeout(() => setIsSaving(false), 800);
+        },
     });
 
     useEffect(() => {
