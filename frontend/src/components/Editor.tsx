@@ -240,9 +240,9 @@ export const Editor = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <div className="flex flex-col items-end mr-2">
+                    <div className="flex flex-col items-end mr-4 pl-4 border-l border-zinc-800/50">
                         <span className="text-xs text-zinc-500 hidden md:inline">Última atualização</span>
-                        <span className="text-xs text-zinc-300 font-mono">{timeAgoStr}</span>
+                        <span className="text-xs text-zinc-300 font-mono whitespace-nowrap">{timeAgoStr}</span>
                     </div>
 
                     {/* Safety Toggle */}
