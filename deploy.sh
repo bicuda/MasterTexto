@@ -75,11 +75,12 @@ mkdir -p "$APP_DIR/backend/prisma"
 chmod -R 777 "$APP_DIR/backend/prisma"
 
 npx prisma db push
+npm run build
 
 # Start/Restart Backend with PM2
 pm2 stop mastertexto-api 2>/dev/null || true
 pm2 delete mastertexto-api 2>/dev/null || true
-pm2 start src/server.ts --interpreter ./node_modules/.bin/ts-node --name "mastertexto-api" --env PORT=$BACK_PORT
+pm2 start dist/server.js --name "mastertexto-api" --env PORT=$BACK_PORT
 pm2 save
 
 echo "🎨 Configurando Frontend..."
