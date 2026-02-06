@@ -126,6 +126,7 @@ sudo ln -sf "$NGINX_CONF" /etc/nginx/sites-enabled/
 
 # Restart Nginx
 sudo nginx -t
+sudo systemctl enable nginx
 sudo systemctl restart nginx
 
 echo "=========================================="
